@@ -1,5 +1,6 @@
 <template>
 	<view>
+		<my-search @mySearch="gotoSearch"></my-search>
 	<!-- scoll-view 纵向滑动要提供一个固定的高度和scoll-y-->
 	<view class="scroll-view-container">
 		<!-- 左侧滑动区 -->
@@ -47,7 +48,8 @@
 		onLoad(){
 			//获取手机设备信息，里面有一个可使用屏幕的高度
 			const sysInfo = uni.getSystemInfoSync()
-			this.wh = sysInfo.windowHeight
+			this.wh = sysInfo.windowHeight-50
+			//后来在页面上加了一个搜索框，需要减掉搜索框的高度
 			this.getCateList()
 		},
 		methods:{
@@ -67,6 +69,11 @@
 			  uni.navigateTo({
 			    url: '/subpkg/goods_list/goods_list?cid=' + item3.cat_id
 			  })
+			},
+			gotoSearch(){
+				uni.navigateTo({
+					url:'/subpkg/search/search'
+				})
 			}
 		}
 	}

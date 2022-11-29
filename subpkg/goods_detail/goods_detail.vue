@@ -4,170 +4,236 @@
 		<!-- 轮播图区域 -->
 		<swiper :indicator-dots="true" :autoplay="true" :interval="3000" :duration="1000" :circular="true">
 			<swiper-item v-for="(item, i) in goods_info.pics" :key="i">
-			    <image :src="item.pics_big" @click="preview(i)"></image>
-			  </swiper-item>
+				<image :src="item.pics_big" @click="preview(i)"></image>
+			</swiper-item>
 		</swiper>
 		<!-- 商品信息区域 -->
 		<view class="goods-info-box">
-		  <!-- 商品价格 -->
-		  <view class="price">￥{{goods_info.goods_price}}</view>
-		  <!-- 信息主体区域 -->
-		  <view class="goods-info-body">
-		    <!-- 商品名称 -->
-		    <view class="goods-name">{{goods_info.goods_name}}</view>
-		    <!-- 收藏 -->
-		    <view class="favi">
-		      <uni-icons type="star" size="18" color="gray"></uni-icons>
-		      <text>收藏</text>
-		    </view>
-		  </view>
-		  <!-- 运费 -->
-		  <view class="yf">快递：免运费</view>
+			<!-- 商品价格 -->
+			<view class="price">￥{{goods_info.goods_price}}</view>
+			<!-- 信息主体区域 -->
+			<view class="goods-info-body">
+				<!-- 商品名称 -->
+				<view class="goods-name">{{goods_info.goods_name}}</view>
+				<!-- 收藏 -->
+				<view class="favi">
+					<uni-icons type="star" size="18" color="gray"></uni-icons>
+					<text>收藏</text>
+				</view>
+			</view>
+			<!-- 运费 -->
+			<view class="yf">快递：免运费</view>
 		</view>
-	    <!-- 商品详情信息 -->
+		<!-- 商品详情信息 -->
 		<!-- 这里后端给的是html结构语言的文本，我们需要用这个来渲染 -->
-	    <rich-text :nodes="goods_info.goods_introduce"></rich-text>
+		<rich-text :nodes="goods_info.goods_introduce"></rich-text>
 		<!-- 商品导航组件 -->
 		<view class="goods_nav">
-		  <!-- fill 控制右侧按钮的样式 -->
-		  <!-- options 左侧按钮的配置项 -->
-		  <!-- buttonGroup 右侧按钮的配置项 -->
-		  <!-- click 左侧按钮的点击事件处理函数 -->
-		  <!-- buttonClick 右侧按钮的点击事件处理函数 -->
-		  <uni-goods-nav :fill="true" :options="options" :buttonGroup="buttonGroup" @click="onClick" @buttonClick="buttonClick" />
+			<!-- fill 控制右侧按钮的样式 -->
+			<!-- options 左侧按钮的配置项 -->
+			<!-- buttonGroup 右侧按钮的配置项 -->
+			<!-- click 左侧按钮的点击事件处理函数 -->
+			<!-- buttonClick 右侧按钮的点击事件处理函数 -->
+			<uni-goods-nav :fill="true" :options="options" :buttonGroup="buttonGroup" @click="onClick"
+				@buttonClick="buttonClick" />
 		</view>
 	</view>
 </template>
 
 <script>
+	import {
+		mapState,
+		mapMutations,
+		mapGetters
+	} from 'vuex'
 	export default {
+		// watch: {
+		//    // 页面首次加载完毕后，不会调用这个侦听器
+		//    total(newVal) {
+		//       const findResult = this.options.find(x => x.text === '购物车')
+		//       if (findResult) {
+		//          findResult.info = newVal
+		//       }
+		//    }
+		// },
+		watch: {
+		   // 定义 total 侦听器，指向一个配置对象
+		   total: {
+		      // handler 属性用来定义侦听器的 function 处理函数
+		      handler(newVal) {
+		         const findResult = this.options.find(x => x.text === '购物车')
+		         if (findResult) {
+		            findResult.info = newVal
+		         }
+		      },
+		      // immediate 属性用来声明此侦听器，是否在页面初次加载完毕后立即调用
+		      immediate: true
+		   }
+		},
 		data() {
 			return {
 				// 商品详情对象
-			    goods_info: {},
+				goods_info: {},
 				// 左侧按钮组的配置对象
-				    options: [{
-				      icon: 'shop',
-				      text: '店铺'
-				    }, {
-				      icon: 'cart',
-				      text: '购物车',
-				      info: 2
-				    }],
-				    // 右侧按钮组的配置对象
-				    buttonGroup: [{
-				        text: '加入购物车',
-				        backgroundColor: '#ff0000',
-				        color: '#fff'
-				      },
-				      {
-				        text: '立即购买',
-				        backgroundColor: '#ffa200',
-				        color: '#fff'
-				      }
-				    ]
+				options: [{
+					icon: 'shop',
+					text: '店铺'
+				}, {
+					icon: 'cart',
+					text: '购物车',
+					info: 0
+				}],
+				// 右侧按钮组的配置对象
+				buttonGroup: [{
+						text: '加入购物车',
+						backgroundColor: '#ff0000',
+						color: '#fff'
+					},
+					{
+						text: '立即购买',
+						backgroundColor: '#ffa200',
+						color: '#fff'
+					}
+				]
 			};
 		},
-		onLoad(options) {
-		  // 获取商品 Id
-		  const goods_id = options.goods_id
-		  // 调用请求商品详情数据的方法
-		  this.getGoodsDetail(goods_id)
+		computed: {
+			// 调用 mapState 方法，把 m_cart 模块中的 cart 数组映射到当前页面中，作为计算属性来使用
+			// ...mapState('模块的名称', ['要映射的数据名称1', '要映射的数据名称2'])
+			...mapState('m_cart', ['cart']),
+			//...mapState({cart:state=>state.moudleCart.cart})
+			...mapGetters('m_cart', ['total'])
 		},
+		onLoad(options) {
+			// 获取商品 Id
+			const goods_id = options.goods_id
+			// 调用请求商品详情数据的方法
+			this.getGoodsDetail(goods_id)
+		},
+		//过 watch 侦听器，监听计算属性 total 值的变化，从而动态为购物车按钮的徽标赋值
 		methods: {
-		  // 定义请求商品详情数据的方法
-		  async getGoodsDetail(goods_id) {
-		    const { data: res } = await uni.$http.get('/api/public/v1/goods/detail', { goods_id : goods_id})
-		    if (res.meta.status !== 200) return uni.$showMsg()
-			//这里introduce里面是html文本，我们需要对里面的样式进行改造，所以需要用到正则替换,/g的意思是全局替换
-			//解决 .webp 格式图片在 ios 设备上无法正常显示的问题：
-			res.message.goods_introduce = res.message.goods_introduce.replace(/<img /g, '<img style="display:block;" ').replace(/webp/g, 'jpg')
-		    // 为 data 中的数据赋值
-		    this.goods_info = res.message
-		  },
-		  // 轮播图预览效果
-		  preview(i){
-			  // 调用 uni.previewImage() 方法预览图片
-			    uni.previewImage({
-			      // 预览时，默认显示图片的索引
-			      current: i,
-			      // 所有图片 url 地址的数组，对goods_info里面的pics进行一个遍历，得到一个新的数组
-			      urls: this.goods_info.pics.map(x => x.pics_big)
-				  //urls:['','','']预览图的轮播数组
-			    })
-		  },
-		  onClick(e){
-			  if (e.content.text === '购物车') {
-			      // 切换到购物车页面
-			      uni.switchTab({
-			        url: '/pages/cart/cart'
-			      })
-			    }
-		  }
+			// 定义请求商品详情数据的方法
+			async getGoodsDetail(goods_id) {
+				const {
+					data: res
+				} = await uni.$http.get('/api/public/v1/goods/detail', {
+					goods_id: goods_id
+				})
+				if (res.meta.status !== 200) return uni.$showMsg()
+				//这里introduce里面是html文本，我们需要对里面的样式进行改造，所以需要用到正则替换,/g的意思是全局替换
+				//解决 .webp 格式图片在 ios 设备上无法正常显示的问题：
+				res.message.goods_introduce = res.message.goods_introduce.replace(/<img /g,
+					'<img style="display:block;" ').replace(/webp/g, 'jpg')
+				// 为 data 中的数据赋值
+				this.goods_info = res.message
+			},
+			// 轮播图预览效果
+			preview(i) {
+				// 调用 uni.previewImage() 方法预览图片
+				uni.previewImage({
+					// 预览时，默认显示图片的索引
+					current: i,
+					// 所有图片 url 地址的数组，对goods_info里面的pics进行一个遍历，得到一个新的数组
+					urls: this.goods_info.pics.map(x => x.pics_big)
+					//urls:['','','']预览图的轮播数组
+				})
+			},
+			onClick(e) {
+				if (e.content.text === '购物车') {
+					// 切换到购物车页面
+					uni.switchTab({
+						url: '/pages/cart/cart'
+					})
+				}
+			},
+			// 把 m_cart 模块中的 addToCart 方法映射到当前页面使用
+			...mapMutations('m_cart', ['addToCart']),
+			//加入购物车事件
+			buttonClick(e) {
+				// 1. 判断是否点击了 加入购物车 按钮
+				if (e.content.text === '加入购物车') {
+
+					// 2. 组织一个商品的信息对象
+					const goods = {
+						goods_id: this.goods_info.goods_id, // 商品的Id
+						goods_name: this.goods_info.goods_name, // 商品的名称
+						goods_price: this.goods_info.goods_price, // 商品的价格
+						goods_count: 1, // 商品的数量
+						goods_small_logo: this.goods_info.goods_small_logo, // 商品的图片
+						goods_state: true // 商品的勾选状态
+					}
+
+					// 3. 通过 this 调用映射过来的 addToCart 方法，把商品信息对象存储到购物车中
+					this.addToCart(goods)
+				}
+			},
 		}
 	}
 </script>
 
 <style lang="scss">
-swiper {
-  height: 750rpx;
+	swiper {
+		height: 750rpx;
 
-  image {
-    width: 100%;
-    height: 100%;
-  }
-}
-// 商品信息区域的样式
-.goods-info-box {
-  padding: 10px;
-  padding-right: 0;
+		image {
+			width: 100%;
+			height: 100%;
+		}
+	}
 
-  .price {
-    color: #c00000;
-    font-size: 18px;
-    margin: 10px 0;
-  }
+	// 商品信息区域的样式
+	.goods-info-box {
+		padding: 10px;
+		padding-right: 0;
 
-  .goods-info-body {
-    display: flex;
-    justify-content: space-between;
+		.price {
+			color: #c00000;
+			font-size: 18px;
+			margin: 10px 0;
+		}
 
-    .goods-name {
-      font-size: 13px;
-      padding-right: 10px;
-    }
-    // 收藏区域
-    .favi {
-      width: 120px;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      border-left: 1px solid #efefef;
-      color: gray;
-    }
-  }
+		.goods-info-body {
+			display: flex;
+			justify-content: space-between;
 
-  // 运费
-  .yf {
-    margin: 10px 0;
-    font-size: 12px;
-    color: gray;
-  }
-}
-.goods-detail-container {
-  // 给页面外层的容器，添加 50px 的  内padding，
-  // 防止页面内容被底部的商品导航组件遮盖
-  padding-bottom: 50px;
-  background-color: #fff;
-}
+			.goods-name {
+				font-size: 13px;
+				padding-right: 10px;
+			}
 
-.goods_nav {
-  // 为商品导航组件添加固定定位
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-}
+			// 收藏区域
+			.favi {
+				width: 120px;
+				font-size: 12px;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				border-left: 1px solid #efefef;
+				color: gray;
+			}
+		}
+
+		// 运费
+		.yf {
+			margin: 10px 0;
+			font-size: 12px;
+			color: gray;
+		}
+	}
+
+	.goods-detail-container {
+		// 给页面外层的容器，添加 50px 的  内padding，
+		// 防止页面内容被底部的商品导航组件遮盖
+		padding-bottom: 50px;
+		background-color: #fff;
+	}
+
+	.goods_nav {
+		// 为商品导航组件添加固定定位
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		width: 100%;
+	}
 </style>

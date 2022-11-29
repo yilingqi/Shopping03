@@ -55,6 +55,16 @@
             "urlCheck" : false,
 			"checkSiteMap" : false
         },
+		"requiredPrivateInfos": [
+		"getFuzzyLocation",
+		"choosePoi",
+		"chooseAddress"
+		],
+		"permission": {
+		  "scope.userLocation": {
+		    "desc": "你的位置信息将用来进行接口调试"
+		  }
+		},
         "usingComponents" : true
     },
     "vueVersion" : "2"
